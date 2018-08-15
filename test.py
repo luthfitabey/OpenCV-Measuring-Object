@@ -39,17 +39,16 @@ def midpoint(ptA, ptB):
 print("[INFO] starting video stream...")
 
 #Buka webcam
-# vs = VideoStream(src=0).start()
+vs = VideoStream(src=0).start()
 
 #Buka Ipcam
-vs = VideoStream(src="http://192.168.200.105:4747/mjpegfeed?640x480").start()
+# vs = VideoStream(src="http://192.168.200.105:4747/mjpegfeed?640x480").start()
 
 #Buka USB
 # vs = VideoStream(src="http://0.0.0.0:4747/mjpegfeed?640x480").start()
 
 time.sleep(2.0)
 fps = FPS().start()
-
 
 ############# search blob to get model ######################
 # loop over the frames from the video stream
