@@ -14,14 +14,14 @@ import math
 
 
 # construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-w", "--width", type=float, required=True,
-	help="width of the left-most object in the image (in inches)")
-# # # ap.add_argument("-c", "--corner", type=float, required=True,
-# # # 	help="width of the left-most object in the image (in inches)")
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-w", "--width", type=float, required=True,
+# 	help="width of the left-most object in the image (in inches)")
+# ap.add_argument("-r", "--radian", type=float, required=True,
+# 	help="radian of alpha")
 # ap.add_argument("-d", "--distance", type=float, required=True,
-# 	help="jarak antara kamera dengan objek")
-args = vars(ap.parse_args())
+# 	help="distabce between camera and object")
+# args = vars(ap.parse_args())
 
 # Loadibg model
 print("[INFO] Loading model...")
@@ -189,8 +189,8 @@ while True:
 		# 	pixelsPerMetric = (dB * 0.0264583333)  / args["width"]
 
 		#coba disamakan satuannya ke px pake sudut
-		if pixelsPerMetric is None:
-			pixelsPerMetric = dB  / ((args["width"] * math.tan(180)) * 37.795275591)
+		# if pixelsPerMetric is None:
+		# 	pixelsPerMetric = dB  / ((args["width"] * math.tan(180)) * 37.795275591)
 
 		#coba disamakan satuannya ke px
 		# if pixelsPerMetric is None:
@@ -208,9 +208,9 @@ while True:
 		# dimC = (dimA * dimB)
 
 		#px --> disamakan satuannya (salah)
-		dimA = (dA / pixelsPerMetric) * 0.026458333
-		dimB = (dB / pixelsPerMetric) * 0.026458333
-		dimC = (dimA * dimB)
+		# dimA = (dA / pixelsPerMetric) * 0.026458333
+		# dimB = (dB / pixelsPerMetric) * 0.026458333
+		# dimC = (dimA * dimB)
 
 		#meter
 		# dimA = (dA / pixelsPerMetric) * 0.0254
@@ -218,9 +218,9 @@ while True:
 		# dimC = (dimA * dimB)
 
 		#coba cm (bisa, bener untuk jarak <70cm)
-		# dimA = (dA  * 0.026458) 
-		# dimB = (dB * 0.026458) 
-		# dimC = (dimA * dimB)
+		dimA = (dA  * 0.026458) 
+		dimB = (dB * 0.026458) 
+		dimC = (dimA * dimB)
 	 
         #coba meter (bisa)
 		# dimA = (dA * 0.000264583)
@@ -245,13 +245,13 @@ while True:
 		cv2.putText(orig, "{:.1f}cm".format(dimB),
 			(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
 			0.65, (255, 255, 255), 2)
-		
+
 	# output text 
 		font = cv2.FONT_HERSHEY_SIMPLEX
-		cv2.rectangle(orig, (250, 250), (400, 450), (180, 132, 109), -1)
-		cv2.putText(orig, '-Luas: ' + "{:.2f}".format(dimC), (255, 260), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-		cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (255, 275), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-		cv2.putText(orig, '-Tipe: ' + format(label), (255, 290), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+		cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
+		cv2.putText(orig, '-Luas: ' + "{:.2f}".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+		cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+		cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
 		
 # show the output frame
 	cv2.imshow("Frame", orig)
