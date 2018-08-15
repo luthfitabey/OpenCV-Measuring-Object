@@ -23,9 +23,7 @@ ap.add_argument("-w", "--width", type=float, required=True,
 # 	help="jarak antara kamera dengan objek")
 args = vars(ap.parse_args())
 
-########function #####################
-# initialize the list of class labels MobileNet SSD was trained to
-# detect, then generate a set of bounding box colors for each class
+# Loadibg model
 print("[INFO] Loading model...")
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
@@ -34,12 +32,11 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 net = cv2.dnn.readNetFromCaffe(r"C:\Users\hp\Documents\Harbour_Scanner\MobileNetSSD_deploy.prototxt.txt", r"C:\Users\hp\Documents\Harbour_Scanner\MobileNetSSD_deploy.caffemodel")
 
-#cari titik tengah
+#initialize midpoint
 def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
-#################################
 
-################## Buka Kamera ##############
+#Open Cam
 print("[INFO] starting video stream...")
 
 #Buka webcam
@@ -56,13 +53,13 @@ fps = FPS().start()
 #########################################
 
 
-############# Cari blob ######################
+############# search blob to get model ######################
 # loop over the frames from the video stream
 while True:
 	# grab the frame from the threaded video stream and resize it
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
-	frame = imutils.resize(frame, width=400)
+	frame = imutils.resize(frame, width=1000)
 
 	# grab the frame dimensions and convert it to a blob
 	(h, w) = frame.shape[:2]
@@ -101,13 +98,8 @@ while True:
 
 
 
-################## Mencari size #################################
-
-# # construct the argument parse and parse the arguments
-# ap = argparse.ArgumentParser()
-# ap.add_argument("-w", "--width", type=float, required=True,
-# 	help="width of the left-most object in the image (in inches)")
-# args = vars(ap.parse_args())
+################## Measuring size #################################
+	#get label from blob to print at imshow
 	label = "{}: {:.2f}%".format(CLASSES[idx],
 			confidence * 100)
 	# load the image, convert it to grayscale, and blur it slightly
@@ -132,7 +124,6 @@ while True:
 		# if the contour is not sufficiently large, ignore it
 		if cv2.contourArea(c) < 100:
 			continue
- 
 		# compute the rotated bounding box of the contour		
 		orig = frame.copy()
 		box = cv2.minAreaRect(c)
@@ -157,8 +148,8 @@ while True:
 		(tltrX, tltrY) = midpoint(tl, tr)
 		(blbrX, blbrY) = midpoint(bl, br)
 	 
-		# hitung midpoint antara titik kiri atas dan kanan atas,
-		# lalu midpoint titik kanan atas dan kanan bawah
+		# calculate the midpoint between the top left and right upper points,
+		# then midpoint right upper and lower right point
 		(tlblX, tlblY) = midpoint(tl, bl)
 		(trbrX, trbrY) = midpoint(tr, br)
 	 
@@ -178,9 +169,7 @@ while True:
 		dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
 		dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 	 
-		# if the pixels per metric has not been initialized, then
-		# compute it as the ratio of pixels to supplied metric
-		# (in this case, inches)
+		#compute the euclidean distance (px) to actual measurement
 
 		# if pixelsPerMetric is None:
 		# 	pixelsPerMetric = dB / (math.tan(90) * 7.87)
@@ -256,9 +245,7 @@ while True:
 		cv2.putText(orig, "{:.1f}cm".format(dimB),
 			(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
 			0.65, (255, 255, 255), 2)
-
-	#ROI Line
-		# cv2.line(orig, (30, 0), (30,400), (0, 0, 0xFF), 2)	1
+		
 	# output text 
 		font = cv2.FONT_HERSHEY_SIMPLEX
 		cv2.rectangle(orig, (250, 250), (400, 450), (180, 132, 109), -1)
