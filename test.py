@@ -165,7 +165,7 @@ while True:
 		dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
 		dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 	 
-	#compute the euclidean distance (px) to actual measurement
+#compute the euclidean distance (px) to actual measurement
 		# if pixelsPerMetric is None:
 		# 	pixelsPerMetric = dB / (math.tan(90) * 7.87)
 
@@ -232,7 +232,7 @@ while True:
 		# dimB = (dB  * 0.026458)
 		# dimC = (dimA * dimB)
 
-		# draw the object sizes on the image
+	# draw the object sizes on the image
 		cv2.putText(orig, "{:.1f}cm".format(dimA),
 			(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
 			0.65, (255, 255, 255), 2)
