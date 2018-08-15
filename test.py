@@ -12,7 +12,6 @@ import cv2
 import argparse
 import math
 
-
 # construct the argument parse and parse the arguments
 # ap = argparse.ArgumentParser()
 # ap.add_argument("-w", "--width", type=float, required=True,
@@ -23,7 +22,7 @@ import math
 # 	help="distabce between camera and object")
 # args = vars(ap.parse_args())
 
-# Loadibg model
+# Loading model from opensource API
 print("[INFO] Loading model...")
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
@@ -50,7 +49,6 @@ vs = VideoStream(src="http://192.168.200.105:4747/mjpegfeed?640x480").start()
 
 time.sleep(2.0)
 fps = FPS().start()
-#########################################
 
 
 ############# search blob to get model ######################
@@ -95,8 +93,6 @@ while True:
 			# y = startY - 15 if startY - 15 > 15 else startY + 15
 			# cv2.putText(frame, label, (startX, y),
 			# 	cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
-
-
 
 ################## Measuring size #################################
 	#get label from blob to print at imshow
@@ -169,8 +165,7 @@ while True:
 		dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
 		dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 	 
-		#compute the euclidean distance (px) to actual measurement
-
+	#compute the euclidean distance (px) to actual measurement
 		# if pixelsPerMetric is None:
 		# 	pixelsPerMetric = dB / (math.tan(90) * 7.87)
 
@@ -236,7 +231,6 @@ while True:
 		# dimA = (dA  * 0.026458) + (math.tan(180) *30)
 		# dimB = (dB  * 0.026458)
 		# dimC = (dimA * dimB)
-
 
 		# draw the object sizes on the image
 		cv2.putText(orig, "{:.1f}cm".format(dimA),
