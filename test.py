@@ -13,14 +13,16 @@ import argparse
 import math
 
 # construct the argument parse and parse the arguments
-# ap = argparse.ArgumentParser()
-# ap.add_argument("-w", "--width", type=float, required=True,
+ap = argparse.ArgumentParser()
+ap.add_argument("-u", "--unit", type=str, required=True,
+	help="unit of measurement")
+# ap.add_argument("-w", "--width", type=float, required=Tue,
 # 	help="width of the left-most object in the image (in inches)")
 # ap.add_argument("-r", "--radian", type=float, required=True,
 # 	help="radian of alpha")
 # ap.add_argument("-d", "--distance", type=float, required=True,
 # 	help="distabce between camera and object")
-# args = vars(ap.parse_args())
+args = vars(ap.parse_args())
 
 # Loading model from opensource API
 print("[INFO] Loading model...")
@@ -211,16 +213,46 @@ while True:
 		# dimB = (dB / pixelsPerMetric) * 0.0254
 		# dimC = (dimA * dimB)
 
-		#coba cm (bisa, bener untuk jarak <70cm)
-		dimA = (dA  * 0.026458) 
-		dimB = (dB * 0.026458) 
-		dimC = (dimA * dimB)
-	 
-        #coba meter (bisa)
-		# dimA = (dA * 0.000264583)
-		# dimB = (dB * 0.000264583)
-		# dimC = (dimA * dimB)
 
+		if args["unit"] == "cm" :
+			#coba cm (bisa, bener untuk jarak <70cm)
+			dimA = (dA  * 0.026458) 
+			dimB = (dB * 0.026458) 
+			dimC = (dimA * dimB)
+
+			# draw the object sizes on the image
+			cv2.putText(orig, "{:.1f}cm".format(dimA),
+				(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
+				0.65, (255, 255, 255), 2)
+			cv2.putText(orig, "{:.1f}cm".format(dimB),
+				(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
+				0.65, (255, 255, 255), 2)
+
+			# output text 
+			font = cv2.FONT_HERSHEY_SIMPLEX
+			cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
+			cv2.putText(orig, '-Luas: ' + "{:.2f} cm^2".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+			cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+			cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+					
+		elif args["unit"] == "m" :  
+	        #coba meter (bisa)
+			dimA = (dA * 0.000264583)
+			dimB = (dB * 0.000264583)
+			dimC = (dimA * dimB)
+			cv2.putText(orig, "{:.1f}m".format(dimA),
+				(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
+				0.65, (255, 255, 255), 2)
+			cv2.putText(orig, "{:.1f}m".format(dimB),
+				(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
+				0.65, (255, 255, 255), 2)
+			# output text 
+			font = cv2.FONT_HERSHEY_SIMPLEX
+			cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
+			cv2.putText(orig, '-Luas: ' + "{:.2f} m^2".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+			cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+			cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+					
 	 	#hehe 
 		# dimA = (dA / pixelsPerMetric) * 0.026458
 		# dimB = (dB / pixelsPerMetric) * 0.026458
@@ -231,21 +263,7 @@ while True:
 		# dimB = (dB  * 0.026458)
 		# dimC = (dimA * dimB)
 
-	# draw the object sizes on the image
-		cv2.putText(orig, "{:.1f}cm".format(dimA),
-			(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
-			0.65, (255, 255, 255), 2)
-		cv2.putText(orig, "{:.1f}cm".format(dimB),
-			(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
-			0.65, (255, 255, 255), 2)
 
-	# output text 
-		font = cv2.FONT_HERSHEY_SIMPLEX
-		cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
-		cv2.putText(orig, '-Luas: ' + "{:.2f}".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-		cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-		cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-		
 # show the output frame
 	cv2.imshow("Frame", orig)
 	key = cv2.waitKey(1) & 0xFF
