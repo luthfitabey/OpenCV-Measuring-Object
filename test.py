@@ -97,8 +97,7 @@ while True:
 
 ################## Measuring size #################################
 	#get label from blob to print at imshow
-	label = "{}: {:.2f}%".format(CLASSES[idx],
-			confidence * 100)
+	lbl = label
 	# load the image, convert it to grayscale, and blur it slightly
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	gray = cv2.GaussianBlur(gray, (7, 7), 0)
@@ -245,7 +244,7 @@ while True:
 			cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
 			cv2.putText(orig, '-Luas: ' + "{:.2f} cm^2".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
 			cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-			cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+			cv2.putText(orig, '-Tipe: ' + format(lbl), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
 					
 		elif args["unit"] == "m" :  
 	        #coba meter (bisa)
