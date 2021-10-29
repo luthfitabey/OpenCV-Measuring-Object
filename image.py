@@ -9,22 +9,20 @@ import numpy as np
 import imutils
 import time
 import cv2
-import argparse
 import math
+
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-u", "--unit", type=str, required=True,
-	help="unit of measurement, 'm' for give you meter and 'cm' for give you centimeter" )
-# ap.add_argument("-w", "--width", type=float, required=Tue,
-# 	help="width of the left-most object in the image (in inches)")
-# ap.add_argument("-r", "--radian", type=float, required=True,
-# 	help="radian of alpha")
-# ap.add_argument("-d", "--distance", type=float, required=True,
-# 	help="distabce between camera and object")
+ap.add_argument("-i", "--image", required=True,
+	help="path to the input image")
+ap.add_argument("-w", "--width", type=float, required=True,
+	help="width of the left-most object in the image (in inches)")
 args = vars(ap.parse_args())
 
-# Loading model from opensource API
+########function #####################
+# initialize the list of class labels MobileNet SSD was trained to
+# detect, then generate a set of bounding box colors for each class
 print("[INFO] Loading model...")
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
@@ -33,32 +31,36 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 net = cv2.dnn.readNetFromCaffe(r"C:\Users\hp\Documents\Harbour_Scanner\MobileNetSSD_deploy.prototxt.txt", r"C:\Users\hp\Documents\Harbour_Scanner\MobileNetSSD_deploy.caffemodel")
 
-#initialize midpoint
+#cari titik tengah
 def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
+#################################
 
-#Open Cam
+################## Buka Kamera ##############
 # print("[INFO] starting video stream...")
 
 #Buka webcam
 # vs = VideoStream(src=0).start()
 
 #Buka Ipcam
-vs = VideoStream(src="http://192.168.32.194:4747/mjpegfeed?640x480").start()
+# vs = VideoStream(src="http://192.168.200.105:4747/mjpegfeed?640x480").start()
 
 #Buka USB
 # vs = VideoStream(src="http://0.0.0.0:4747/mjpegfeed?640x480").start()
+# 
+# time.sleep(2.0)
+# fps = FPS().start()
+#########################################
 
-time.sleep(2.0)
-fps = FPS().start()
 
-############# search blob to get model ######################
+############# Cari blob ######################
 # loop over the frames from the video stream
 while True:
 	# grab the frame from the threaded video stream and resize it
 	# to have a maximum width of 400 pixels
+	image = cv2.imread(args["image"])
 	frame = vs.read()
-	frame = imutils.resize(frame, width=1000)
+	frame = imutils.resize(frame, width=400)
 
 	# grab the frame dimensions and convert it to a blob
 	(h, w) = frame.shape[:2]
@@ -95,9 +97,19 @@ while True:
 			# cv2.putText(frame, label, (startX, y),
 			# 	cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
 
-################## Measuring size #################################
-	#get label from blob to print at imshow
-	lbl = label
+
+
+################## Mencari size #################################
+
+# # construct the argument parse and parse the arguments
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-w", "--width", type=float, required=True,
+# 	help="width of the left-most object in the image (in inches)")
+# args = vars(ap.parse_args())
+
+	label = "{} | {:.0f}%".format(CLASSES[idx],
+			confidence * 100)
+
 	# load the image, convert it to grayscale, and blur it slightly
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	gray = cv2.GaussianBlur(gray, (7, 7), 0)
@@ -120,6 +132,7 @@ while True:
 		# if the contour is not sufficiently large, ignore it
 		if cv2.contourArea(c) < 100:
 			continue
+ 
 		# compute the rotated bounding box of the contour		
 		orig = frame.copy()
 		box = cv2.minAreaRect(c)
@@ -144,8 +157,8 @@ while True:
 		(tltrX, tltrY) = midpoint(tl, tr)
 		(blbrX, blbrY) = midpoint(bl, br)
 	 
-		# calculate the midpoint between the top left and right upper points,
-		# then midpoint right upper and lower right point
+		# hitung midpoint antara titik kiri atas dan kanan atas,
+		# lalu midpoint titik kanan atas dan kanan bawah
 		(tlblX, tlblY) = midpoint(tl, bl)
 		(trbrX, trbrY) = midpoint(tr, br)
 	 
@@ -165,106 +178,51 @@ while True:
 		dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
 		dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 	 
+		# if the pixels per metric has not been initialized, then
+		# compute it as the ratio of pixels to supplied metric
+		# (in this case, inches)
+		if pixelsPerMetric is None:
+			pixelsPerMetric = dB / (math.tan(90) * 7.87)
+		# if pixelsPerMetric is None:
+		# 	pixelsPerMetric = dB / (math.tan(["corner"]) * ["distance"])
 
-		if args["unit"] == "cm" :
-			#converting to cm (object distances<70cm)
-			dimA = (dA  * 0.026458) 
-			dimB = (dB * 0.026458) 
-			dimC = (dimA * dimB)
+		# if pixelsPerMetric is None:
+			# pixelsPerMetric = dB / {"width"}
 
-		#compute the euclidean distance (px) to actual measurement
-			# if pixelsPerMetric is None:
-			# 	pixelsPerMetric = dB / (math.tan(90) * 7.87)
+#### Hitung ukuran ke cm/meter/inch####
 
-				# if pixelsPerMetric is None:
-				# 	pixelsPerMetric = dB / (math.tan(["corner"]) * ["distance"])
+		#default inch
+		dimA = (dA / pixelsPerMetric) 
+		dimB = (dB / pixelsPerMetric) 
+		dimC = (dimA * dimB)
 
-				#salah
-			# if pixelsPerMetric is None:
-			# 	pixelsPerMetric = dB / args["width"] + args["distance"]
+		#cm
+		# dimA = (dA / pixelsPerMetric) * 2.54
+		# dimB = (dB / pixelsPerMetric) * 2.54
+		# dimC = (dimA * dimB)
 
-				# if pixelsPerMetric is None:
-				# 	pixelsPerMetric = dB / 0.026458
+		#meter
+		# dimA = (dA / pixelsPerMetric) * 0.0254
+		# dimB = (dB / pixelsPerMetric) * 0.0254
+		# dimC = (dimA * dimB)
+	 
+		# draw the object sizes on the image
+		cv2.putText(orig, "{:.1f}cm".format(dimA),
+			(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
+			0.65, (255, 255, 255), 2)
+		cv2.putText(orig, "{:.1f}cm".format(dimB),
+			(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
+			0.65, (255, 255, 255), 2)
 
-				#coba disamakan satuannya ke cm (salah)
-				# if pixelsPerMetric is None:
-				# 	pixelsPerMetric = (dB * 0.0264583333)  / args["width"]
-
-				#coba disamakan satuannya ke px pake sudut
-				# if pixelsPerMetric is None:
-				# 	pixelsPerMetric = dB  / ((args["width"] * math.tan(180)) * 37.795275591)
-
-				#coba disamakan satuannya ke px
-				# if pixelsPerMetric is None:
-				# 	pixelsPerMetric = dB  / (args["width"] * 37.795275591)
-
-		#### Hitung ukuran ke cm/meter/inch####
-				#default inch (bisa)
-				# dimA = (dA / pixelsPerMetric) 
-				# dimB = (dB / pixelsPerMetric) 
-				# dimC = (dimA * dimB)
-
-				#cm --> disamakan satuannya (salah)
-				# dimA = ((dA * 0.0264583333) / pixelsPerMetric) 
-				# dimB = ((dB * 0.0264583333) / pixelsPerMetric) 
-				# dimC = (dimA * dimB)
-
-				#px --> disamakan satuannya (salah)
-				# dimA = (dA / pixelsPerMetric) * 0.026458333
-				# dimB = (dB / pixelsPerMetric) * 0.026458333
-				# dimC = (dimA * dimB)
-
-				#meter
-				# dimA = (dA / pixelsPerMetric) * 0.0254
-				# dimB = (dB / pixelsPerMetric) * 0.0254
-				# dimC = (dimA * dimB)
-
-				#hehe 
-				# dimA = (dA / pixelsPerMetric) * 0.026458
-				# dimB = (dB / pixelsPerMetric) * 0.026458
-				# dimC = (dimA * dimB)
-
-				#haha gagal
-				# dimA = (dA  * 0.026458) + (math.tan(180) *30)
-				# dimB = (dB  * 0.026458)
-				# dimC = (dimA * dimB)
-
-			# draw the object sizes on the image
-			cv2.putText(orig, "{:.1f}cm".format(dimA),
-				(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
-				0.65, (255, 255, 255), 2)
-			cv2.putText(orig, "{:.1f}cm".format(dimB),
-				(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
-				0.65, (255, 255, 255), 2)
-
-			# output text 
-			#dim c = dimension of object
-			#price = (dima * dimb ) * Rp 10000
-			font = cv2.FONT_HERSHEY_SIMPLEX
-			cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
-			cv2.putText(orig, '-Luas: ' + "{:.2f} cm^2".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-			cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*14162), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-			cv2.putText(orig, '-Tipe: ' + format(lbl), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-					
-		elif args["unit"] == "m" :  
-	        #converting to meters
-			dimA = (dA * 0.000264583)
-			dimB = (dB * 0.000264583)
-			dimC = (dimA * dimB)
-			cv2.putText(orig, "{:.1f}m".format(dimA),
-				(int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
-				0.65, (255, 255, 255), 2)
-			cv2.putText(orig, "{:.1f}m".format(dimB),
-				(int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
-				0.65, (255, 255, 255), 2)
-			# output text 
-			font = cv2.FONT_HERSHEY_SIMPLEX
-			cv2.rectangle(orig, (1000, 1000), (700, 620), (800, 132, 109), -1)
-			cv2.putText(orig, '-Luas: ' + "{:.2f} m^2".format(dimC), (700, 650), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-			# converting dollar to rupiah then viewing at the screen
-			cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*14162), (700, 690), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-			cv2.putText(orig, '-Tipe: ' + format(label), (700, 730), font, 0.7, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
-				
+#ROI Line
+	# cv2.line(orig, (30, 0), (30,400), (0, 0, 0xFF), 2)	1
+# output text 
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	cv2.rectangle(orig, (250, 250), (400, 450), (180, 132, 109), -1)
+	cv2.putText(orig, '-Luas: ' + "{:.2f}".format(dimC), (255, 260), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+	cv2.putText(orig, '-Harga: ' + "Rp. {:.0f}".format(dimC*10000), (255, 275), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+	cv2.putText(orig, '-Tipe: ' + format(label), (255, 290), font, 0.4, (0xFF, 0xFF, 0x00), 1, cv2.FONT_HERSHEY_SIMPLEX)
+	
 # show the output frame
 	cv2.imshow("Frame", orig)
 	key = cv2.waitKey(1) & 0xFF
